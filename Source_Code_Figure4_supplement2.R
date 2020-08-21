@@ -15,9 +15,9 @@ model1cpt<-function(psi,mtimart) {
 # # READING DATA SOURCES
 
 # Change the below tree lines to make fig 3 - supplement 2
-pop_par <- c(1.76368752, 0.52051990, 0.20637664, 0.02336941, 0.47120974)
+pop_par <- c(2.54,0.38,0.13,0.01,1.23)
 ylimID <- c(rep(1,3),rep(0.8,2),1.8,rep(0.8,2),1,rep(0.8,3))
-ind_par <- read.delim("~/GitHub/RM_Code_eLife/Source_Data_Figure4_supplement2.txt")
+ind_par <- read.delim("~/GitHub/RM_Code_eLife/Figure 4-figure supplement 2-source data 1.txt")
 len <- length(ind_par$patient)
 tofu <- 1:60
 

@@ -1,28 +1,13 @@
-##  source /home/02413/sbellan/work/custom-R/source-me.sh
-if(Sys.info()['nodename'] %in% c("STIAS429085", "SASEMA469883")) setwd('C:/Users/ujenezae/Documents/NlmeCodes/') ## SB
-if(grepl('tacc', Sys.info()['nodename'])) setwd('/home/02413/sbellan/work/HIVClinicTanzMoH/') ## TACC
-if(Sys.info()['nodename']=="evaliliane-laptop") setwd('/home/evaliliane/Documents/PhD/HPCP/NlmeCodes') ## setwd for linux computer
-
+# This code has not been evaluated. A dataset containing patients data is required forits usage. 
+# Necessary features: Patients IDs, Sex, Age at ART initiation, Log-transformed RNA viral load, and a binary variable
+# that  specify whtehr ornot the patient has suppressed viral load within 12-months of therapy.
+# The outcome variable is scaled CD4.
 
 library(saemix)
 
-# =======================================================  DATA 
 
-inDatach <- testdat[,c(2,11:22)]
-#inDatach <- read.csv("NlmeAdData5_2018-07-28.csv")
-inDatach <- inDatach[order(inDatach$patient,inDatach$mtimart),] 
-inDatach$logrna <- log(inDatach$baserna)
-inDatach$mthage <- 12 * inDatach$baseage
-colnames(inDatach)[which(names(inDatach) == "gender")] <- "sex"
-
-
-inDatach <- inDatach[complete.cases(inDatach[,c("patient","scalcd4a","mtimart","sex","mthage", "logrna","suppress")]),]
-# inDatach <- inDatach[inDatach$gender %in% c(1,2), ]
-# inDatach <- inDatach[is.na(inDatach$basebmi) | inDatach$basebmi < 16, ]
-#inDatach <- inDatach[complete.cases(inDatach),]
-
-
-# Select a subgroup of people
+# ================================================== FUNCTIONS
+# Selecting a subgroup of people
 useSubset <- T
 subselect <- function(addata,n){ 
   num.to.do <- n ## to save computing time when playing with analyses
@@ -31,18 +16,12 @@ subselect <- function(addata,n){
   return(addata)
 }
 
-subdat <- subselect(inDatach,1000)
-#data(inDatach)
-saemix.data <-saemixData(name.data=subdat,header=TRUE,sep=" ",na=NA,
-                         name.group=c("patient"),name.predictors=c("mtimart"),
-                         name.response=c("scalcd4a"),name.covariates=c("sex","mthage", "logrna","suppress"),
-                         units=list(x="months",y="-",covariates=c("-","months","-","log(copies/mL)","-")), name.X="mtimart")
-
-
-# ================================================== FUNCTIONS
-
+#################################### Defining the Ratio Model
 model1cpt<-function(psi,id,xidep) {
-  #dose<-xidep[,1]
+  #psi is the set of parameters
+  #id  contains patient's ID (identification)
+  #xidep contains the time of follow-up for each patient
+  
   mtimart <-xidep[,1]
   k<-psi[id,1]
   q<-psi[id,2]
@@ -55,7 +34,7 @@ model1cpt<-function(psi,id,xidep) {
   return(ypred)
 }
 
-# NLMM function
+##################################### Defining the asymptotic model
 model1asym <- function(psi,id,xidep) {
   #dose<-xidep[,1]
   mtimart <- xidep[,1]
@@ -68,7 +47,18 @@ model1asym <- function(psi,id,xidep) {
   return(ypred)
 }
 
+###############################################################################################################
+# =======================================================  DATA 
 
+# Read your dataset. Make sure that the directory is correctly specified. 
+# Assuming that you call the dataset inDatach, 
+subdat <- subselect(inDatach,1000)
+
+# Defining data to fit the model to.
+saemix.data <-saemixData(name.data=subdat,header=TRUE,sep=" ",na=NA,
+                         name.group=c("patient"),name.predictors=c("mtimart"),
+                         name.response=c("scalcd4a"),name.covariates=c("sex","mthage", "logrna","suppress"),
+                         units=list(x="months",y="-",covariates=c("-","months","-","log(copies/mL)","-")), name.X="mtimart")
 
 
 # ============================================================================= EVALUATING ASYMPTOTIC MODEL
